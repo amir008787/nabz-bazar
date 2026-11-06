@@ -1,11 +1,10 @@
 import os
-import os
 from flask import Flask, jsonify, send_file
 import requests
 
 app = Flask(__name__)
 
-API_URL = "https://nerkhara.com/api/v1/latest.json"
+API_URL = "https://talasanj.info/api/v1/prices"
 
 @app.route("/")
 def home():
@@ -14,30 +13,24 @@ def home():
 @app.route("/api/prices")
 def prices():
     try:
-        response = requests.get(API_URL, params={"_": int(__import__("time").time())}, headers={"Cache-Control": "no-cache", "Pragma": "no-cache"}, timeout=15)
-        response.raise_for_status()
-        items = response.json()["items"]
+        key = os.environ.get("TALASANJ_API_KEY")
 
-        wanted = [
-            "usd", "eur", "gold-18k",
-            "coin-emami", "coin-half", "coin-quarter"
-        ]
-
-        data = {
-            item["id"]: {
-                "price": item["price"],
-                "unit": item["unit"],
-                "updated": item["updated_utc"],
-                "stale": item["stale"]
-            }
-            for item in items
-            if item["id"] in wanted
+        headers = {
+            "Authorization": f"Bearer {key}",
+            "X-Client-Name": "Nabz Bazar",
+            "X-Client-Url": "https://nabz-bazar.fadehost.app"
         }
 
-        return jsonify({"prices": data})
+        response = requests.get(API_URL, headers=headers, timeout=15)
+        response.raise_for_status()
+
+        result = response.json()
+
+        return jsonify(result)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))	
+
