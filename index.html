@@ -1,141 +1,520 @@
+cd ~/nabz-bazar
+cat > index.html <<'EOF'
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>نبض بازار</title>
-
+<meta name="theme-color" content="#0b1220">
+<title>نبض بازار | قیمت لحظه‌ای</title>
 <style>
-body {
-    margin: 0;
-    font-family: Tahoma, sans-serif;
-    background: #101827;
-    color: white;
-    padding: 20px;
+:root{
+ --bg:#0b1220;--panel:#131f32;--panel2:#192840;
+ --text:#f1f5f9;--muted:#94a3b8;--green:#20d6a0;
+ --red:#ff647c;--border:#263750;--blue:#60a5fa;
 }
-header {
-    text-align: center;
-    margin-bottom: 25px;
+*{box-sizing:border-box}
+body{
+ margin:0;background:var(--bg);color:var(--text);
+ font-family:Tahoma,Arial,sans-serif;line-height:1.8;
 }
-h1 { color: #35d6a0; }
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
-    gap: 15px;
+.container{max-width:1150px;margin:auto;padding:20px}
+header{
+ display:flex;justify-content:space-between;align-items:center;
+ gap:15px;flex-wrap:wrap;margin-bottom:25px
 }
-.card {
-    background: #1e2b40;
-    padding: 20px;
-    border-radius: 14px;
-    text-align: center;
+.brand h1{margin:0;color:var(--green);font-size:27px}
+.brand p{margin:3px 0;color:var(--muted);font-size:13px}
+.status{
+ background:var(--panel);border:1px solid var(--border);
+ padding:8px 13px;border-radius:30px;font-size:12px;color:var(--muted)
 }
-.name { color: #b9c7d9; }
-.price {
-    color: #35d6a0;
-    font-size: 20px;
-    font-weight: bold;
-    margin-top: 12px;
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-left:7px}
+.hero{
+ background:linear-gradient(120deg,#173c43,#14233a);
+ border:1px solid #285052;border-radius:18px;padding:22px;
+ margin-bottom:22px
 }
-button {
-    display: block;
-    margin: 25px auto;
-    padding: 12px 25px;
-    border: 0;
-    border-radius: 10px;
-    background: #35d6a0;
-    font-size: 16px;
-    cursor: pointer;
+.hero h2{margin:0 0 8px;font-size:20px}
+.hero p{margin:0;color:#c2d6df;font-size:13px}
+.section-title{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:10px;margin:25px 0 14px
 }
-footer {
-    text-align: center;
-    margin-top: 30px;
-    color: #aaa;
+.section-title h2{font-size:18px;margin:0}
+.grid{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+ gap:14px
 }
-a { color: #35d6a0; }
+.card,.panel{
+ background:var(--panel);border:1px solid var(--border);
+ border-radius:15px;padding:17px
+}
+.card{min-height:145px}
+.card-top{display:flex;justify-content:space-between;gap:8px}
+.card-name{font-size:14px;color:#dbe5f2}
+.card-symbol{font-size:11px;color:var(--muted)}
+.price{font-size:21px;font-weight:bold;margin:13px 0 5px;direction:rtl}
+.unit{font-size:11px;color:var(--muted)}
+.change{font-size:12px;color:var(--muted)}
+.up{color:var(--green)!important}
+.down{color:var(--red)!important}
+.neutral{color:var(--muted)!important}
+.tag{
+ display:inline-block;font-size:10px;padding:2px 8px;
+ border-radius:20px;background:var(--panel2);color:var(--muted)
+}
+.panel{margin-top:14px}
+.chart-head{
+ display:flex;justify-content:space-between;align-items:center;
+ flex-wrap:wrap;gap:12px;margin-bottom:15px
+}
+select,button{
+ background:var(--panel2);color:var(--text);
+ border:1px solid var(--border);border-radius:9px;
+ padding:10px 13px;font-family:inherit;font-size:12px
+}
+button{cursor:pointer}
+button.active,button.primary{
+ background:#12664f;border-color:#16866a;color:white
+}
+.chart-wrap{width:100%;height:290px;position:relative}
+canvas{width:100%;height:100%;display:block}
+.chart-note{font-size:11px;color:var(--muted);margin-top:8px}
+.stats{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+ gap:10px;margin-top:15px
+}
+.stat{background:var(--panel2);padding:12px;border-radius:10px}
+.stat small{display:block;color:var(--muted);font-size:11px}
+.stat strong{font-size:15px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:500px;font-size:12px}
+th,td{padding:12px;text-align:right;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:normal}
+footer{
+ text-align:center;margin:35px 0 10px;color:var(--muted);font-size:12px
+}
+footer a{color:var(--green);text-decoration:none}
+#message{font-size:12px;color:var(--muted);margin-top:10px}
+@media(max-width:600px){
+ .container{padding:13px}
+ .brand h1{font-size:23px}
+ .price{font-size:19px}
+ .chart-wrap{height:240px}
+}
 </style>
 </head>
-
 <body>
+<div class="container">
 
 <header>
-    <h1>نبض بازار</h1>
-    <p>قیمت لحظه‌ای بازار</p>
+ <div class="brand">
+  <h1>نبض بازار</h1>
+  <p>مرکز رصد بازار طلا، سکه و ارز</p>
+ </div>
+ <div class="status"><span class="dot" id="statusDot"></span><span id="marketStatus">در حال اتصال...</span></div>
 </header>
 
-<div class="grid">
-    <div class="card">
-        <div class="name">دلار آمریکا</div>
-        <div class="price" id="usd">در حال دریافت...</div>
-    </div>
+<section class="hero">
+ <h2>نبض لحظه‌ای بازار</h2>
+ <p>قیمت‌ها را دنبال کن، تغییرات را بررسی کن و روند بازار را زیر نظر بگیر.</p>
+</section>
 
-    <div class="card">
-        <div class="name">تتر</div>
-        <div class="price" id="usdt">در حال دریافت...</div>
-    </div>
-
-    <div class="card">
-        <div class="name">طلای ۱۸ عیار</div>
-        <div class="price" id="gram18">در حال دریافت...</div>
-    </div>
-
-    <div class="card">
-        <div class="name">سکه تمام</div>
-        <div class="price" id="coin_full">در حال دریافت...</div>
-    </div>
-
-    <div class="card">
-        <div class="name">نیم سکه</div>
-        <div class="price" id="coin_half">در حال دریافت...</div>
-    </div>
-
-    <div class="card">
-        <div class="name">ربع سکه</div>
-        <div class="price" id="coin_quarter">در حال دریافت...</div>
-    </div>
+<div class="section-title">
+ <h2>قیمت‌های بازار</h2>
+ <span class="tag" id="lastUpdate">در انتظار اطلاعات</span>
 </div>
 
-<button onclick="updatePrices()">به‌روزرسانی قیمت‌ها</button>
+<div class="grid" id="priceGrid">
+
+ <div class="card" data-id="usd">
+  <div class="card-top"><span class="card-name">دلار آمریکا</span><span class="card-symbol">USD</span></div>
+  <div class="price" id="price-usd">---</div><div class="change" id="change-usd">در انتظار اطلاعات</div>
+ </div>
+
+ <div class="card" data-id="usdt">
+  <div class="card-top"><span class="card-name">تتر</span><span class="card-symbol">USDT</span></div>
+  <div class="price" id="price-usdt">---</div><div class="change" id="change-usdt">در انتظار اطلاعات</div>
+ </div>
+
+ <div class="card" data-id="gram18">
+  <div class="card-top"><span class="card-name">طلای ۱۸ عیار</span><span class="card-symbol">18K</span></div>
+  <div class="price" id="price-gram18">---</div><div class="change" id="change-gram18">در انتظار اطلاعات</div>
+ </div>
+
+ <div class="card" data-id="gram24">
+  <div class="card-top"><span class="card-name">طلای ۲۴ عیار</span><span class="card-symbol">24K</span></div>
+  <div class="price" id="price-gram24">---</div><div class="change" id="change-gram24">در انتظار اطلاعات</div>
+ </div>
+
+ <div class="card" data-id="coin_full">
+  <div class="card-top"><span class="card-name">سکه تمام</span><span class="card-symbol">FULL</span></div>
+  <div class="price" id="price-coin_full">---</div><div class="change" id="change-coin_full">در انتظار اطلاعات</div>
+  <div class="change" id="bubble-coin_full"></div>
+ </div>
+
+ <div class="card" data-id="coin_half">
+  <div class="card-top"><span class="card-name">نیم سکه</span><span class="card-symbol">HALF</span></div>
+  <div class="price" id="price-coin_half">---</div><div class="change" id="change-coin_half">در انتظار اطلاعات</div>
+  <div class="change" id="bubble-coin_half"></div>
+ </div>
+
+ <div class="card" data-id="coin_quarter">
+  <div class="card-top"><span class="card-name">ربع سکه</span><span class="card-symbol">QUARTER</span></div>
+  <div class="price" id="price-coin_quarter">---</div><div class="change" id="change-coin_quarter">در انتظار اطلاعات</div>
+  <div class="change" id="bubble-coin_quarter"></div>
+ </div>
+
+ <div class="card" data-id="coin_gerami">
+  <div class="card-top"><span class="card-name">سکه گرمی</span><span class="card-symbol">GERAMI</span></div>
+  <div class="price" id="price-coin_gerami">---</div><div class="change" id="change-coin_gerami">در انتظار اطلاعات</div>
+  <div class="change" id="bubble-coin_gerami"></div>
+ </div>
+
+ <div class="card" data-id="mazaneh">
+  <div class="card-top"><span class="card-name">مثقال طلا</span><span class="card-symbol">MAZANEH</span></div>
+  <div class="price" id="price-mazaneh">---</div><div class="change" id="change-mazaneh">در انتظار اطلاعات</div>
+ </div>
+
+ <div class="card" data-id="ounce">
+  <div class="card-top"><span class="card-name">اونس جهانی طلا</span><span class="card-symbol">XAU</span></div>
+  <div class="price" id="price-ounce">---</div><div class="change" id="change-ounce">در انتظار اطلاعات</div>
+ </div>
+
+</div>
+
+<div class="section-title">
+ <h2>نمودار تغییرات قیمت</h2>
+ <span class="tag">تاریخچه ثبت‌شده در این مرورگر</span>
+</div>
+
+<section class="panel">
+ <div class="chart-head">
+  <select id="chartAsset">
+   <option value="gram18">طلای ۱۸ عیار</option>
+   <option value="usd">دلار</option>
+   <option value="usdt">تتر</option>
+   <option value="coin_full">سکه تمام</option>
+   <option value="coin_half">نیم سکه</option>
+   <option value="coin_quarter">ربع سکه</option>
+   <option value="ounce">اونس جهانی</option>
+  </select>
+  <div class="toolbar">
+   <button class="active" data-range="all">همه</button>
+   <button data-range="24">۲۴ ساعت</button>
+   <button data-range="1">۱ ساعت</button>
+  </div>
+ </div>
+ <div class="chart-wrap"><canvas id="priceChart"></canvas></div>
+ <div class="stats">
+  <div class="stat"><small>آخرین قیمت ثبت‌شده</small><strong id="statLast">---</strong></div>
+  <div class="stat"><small>بالاترین قیمت ثبت‌شده</small><strong id="statHigh">---</strong></div>
+  <div class="stat"><small>پایین‌ترین قیمت ثبت‌شده</small><strong id="statLow">---</strong></div>
+  <div class="stat"><small>تعداد نقاط تاریخچه</small><strong id="statCount">۰</strong></div>
+ </div>
+ <p class="chart-note">توجه: نمودار از زمان بازدید و دریافت قیمت‌ها شروع به ثبت می‌کند؛ داده تاریخی قبل از آن در دسترس نیست.</p>
+</section>
+
+<div class="section-title">
+ <h2>آخرین اطلاعات بازار</h2>
+ <button class="primary" id="refreshBtn">به‌روزرسانی قیمت‌ها</button>
+</div>
+
+<section class="panel">
+ <div class="table-wrap">
+  <table>
+   <thead><tr><th>دارایی</th><th>قیمت</th><th>تغییر روزانه</th></tr></thead>
+   <tbody id="summaryTable">
+    <tr><td colspan="3">در انتظار دریافت اطلاعات...</td></tr>
+   </tbody>
+  </table>
+ </div>
+ <p id="message">در حال اتصال به سرور...</p>
+</section>
 
 <footer>
-    <p id="updated">در انتظار دریافت قیمت‌ها...</p>
-    <a href="https://talasanj.info">قیمت‌ها از طلاسنج</a>
+ <p id="footerUpdate">نبض بازار</p>
+ <a href="https://talasanj.info" target="_blank" rel="noopener">قیمت‌ها از طلاسنج</a>
 </footer>
 
+</div>
+
 <script>
-async function updatePrices() {
-    try {
-        const response = await fetch('/api/prices?t=' + Date.now());
-        const data = await response.json();
+const assets = {
+ usd:"دلار آمریکا",
+ usdt:"تتر",
+ gram18:"طلای ۱۸ عیار",
+ gram24:"طلای ۲۴ عیار",
+ coin_full:"سکه تمام",
+ coin_half:"نیم سکه",
+ coin_quarter:"ربع سکه",
+ coin_gerami:"سکه گرمی",
+ mazaneh:"مثقال طلا",
+ ounce:"اونس جهانی"
+};
 
-        if (!response.ok) {
-            throw new Error(data.error || 'خطا در دریافت اطلاعات');
-        }
+const tracked = Object.keys(assets);
+let historyData = {};
+let selectedRange = "all";
+let latestPrices = {};
 
-        const prices = data.prices;
-
-        const items = ['usd', 'usdt', 'gram18', 'coin_full', 'coin_half', 'coin_quarter'];
-
-        items.forEach(id => {
-            const item = prices[id];
-            document.getElementById(id).textContent =
-                item && item.price != null
-                ? Number(item.price).toLocaleString('fa-IR') + ' تومان'
-                : 'ناموجود';
-        });
-
-        document.getElementById('updated').textContent =
-            'آخرین به‌روزرسانی: ' +
-            new Date(data.updated_at).toLocaleString('fa-IR');
-
-    } catch (error) {
-        document.getElementById('updated').textContent =
-            'خطا: ' + error.message;
-    }
+try {
+ historyData = JSON.parse(localStorage.getItem("nabzHistory") || "{}");
+} catch(e) {
+ historyData = {};
 }
 
-updatePrices();
-setInterval(updatePrices, 30000);
-</script>
+const number = n => Number(n).toLocaleString("fa-IR");
+const money = n => number(n) + " تومان";
 
+function setMessage(message) {
+ document.getElementById("message").textContent = message;
+}
+
+function saveHistory(prices) {
+ const now = Date.now();
+
+ tracked.forEach(id => {
+  const item = prices[id];
+  if (!item || typeof item.price !== "number") return;
+
+  if (!historyData[id]) historyData[id] = [];
+
+  const list = historyData[id];
+  const last = list[list.length - 1];
+
+  if (last && now - last.time < 25000) return;
+
+  list.push({time:now, price:item.price});
+
+  if (list.length > 2000) list.splice(0, list.length - 2000);
+ });
+
+ try {
+  localStorage.setItem("nabzHistory", JSON.stringify(historyData));
+ } catch(e) {
+  setMessage("فضای ذخیره تاریخچه مرورگر پر شده است.");
+ }
+}
+
+function updateCard(id, item) {
+ const priceEl = document.getElementById("price-" + id);
+ const changeEl = document.getElementById("change-" + id);
+ const bubbleEl = document.getElementById("bubble-" + id);
+
+ if (!priceEl) return;
+
+ if (!item || item.price == null) {
+  priceEl.textContent = "ناموجود";
+  changeEl.textContent = "اطلاعات موجود نیست";
+  return;
+ }
+
+ priceEl.textContent = id === "ounce"
+  ? number(item.price) + " دلار"
+  : money(item.price);
+
+ if (item.change_pct != null) {
+  const v = Number(item.change_pct);
+  const sign = v > 0 ? "▲ " : v < 0 ? "▼ " : "";
+  changeEl.textContent = sign + number(Math.abs(v)) + "٪ تغییر روزانه";
+  changeEl.className = "change " + (v > 0 ? "up" : v < 0 ? "down" : "neutral");
+ } else {
+  changeEl.textContent = "درصد تغییر روزانه ثبت نشده";
+  changeEl.className = "change neutral";
+ }
+
+ if (bubbleEl) {
+  bubbleEl.textContent = item.bubble_pct != null
+   ? "حباب: " + number(item.bubble_pct) + "٪"
+   : "";
+ }
+}
+
+function updateTable(prices) {
+ const tbody = document.getElementById("summaryTable");
+ tbody.innerHTML = "";
+
+ tracked.forEach(id => {
+  const item = prices[id];
+  if (!item || item.price == null) return;
+
+  const tr = document.createElement("tr");
+  const td1 = document.createElement("td");
+  const td2 = document.createElement("td");
+  const td3 = document.createElement("td");
+
+  td1.textContent = assets[id];
+  td2.textContent = id === "ounce" ? number(item.price) + " دلار" : money(item.price);
+
+  if (item.change_pct != null) {
+   td3.textContent = number(item.change_pct) + "٪";
+   td3.className = Number(item.change_pct) > 0 ? "up" : Number(item.change_pct) < 0 ? "down" : "";
+  } else {
+   td3.textContent = "—";
+  }
+
+  tr.append(td1,td2,td3);
+  tbody.appendChild(tr);
+ });
+}
+
+async function updatePrices() {
+ const btn = document.getElementById("refreshBtn");
+ btn.disabled = true;
+ btn.textContent = "در حال دریافت...";
+
+ try {
+  const response = await fetch("/api/prices?t=" + Date.now(), {
+   cache:"no-store"
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+   throw new Error(data.error || "خطا در دریافت قیمت‌ها");
+  }
+
+  if (!data.prices) throw new Error("ساختار اطلاعات دریافتی معتبر نیست.");
+
+  latestPrices = data.prices;
+
+  tracked.forEach(id => updateCard(id, data.prices[id]));
+
+  saveHistory(data.prices);
+  updateTable(data.prices);
+  drawChart();
+
+  document.getElementById("marketStatus").textContent =
+   data.market_open ? "بازار باز است" : "بازار بسته است";
+
+  document.getElementById("statusDot").style.background =
+   data.market_open ? "var(--green)" : "var(--red)";
+
+  const updated = data.updated_at
+   ? new Date(data.updated_at).toLocaleString("fa-IR")
+   : "نامشخص";
+
+  document.getElementById("lastUpdate").textContent = "به‌روزرسانی: " + updated;
+  document.getElementById("footerUpdate").textContent = "آخرین دریافت اطلاعات: " + updated;
+
+  setMessage("اطلاعات با موفقیت دریافت شد.");
+ } catch(error) {
+  document.getElementById("marketStatus").textContent = "اختلال در اتصال";
+  document.getElementById("statusDot").style.background = "var(--red)";
+  setMessage("خطا در دریافت اطلاعات: " + error.message);
+ } finally {
+  btn.disabled = false;
+  btn.textContent = "به‌روزرسانی قیمت‌ها";
+ }
+}
+
+function drawChart() {
+ const canvas = document.getElementById("priceChart");
+ const ctx = canvas.getContext("2d");
+ const rect = canvas.getBoundingClientRect();
+ const dpr = window.devicePixelRatio || 1;
+
+ canvas.width = Math.max(1, rect.width * dpr);
+ canvas.height = Math.max(1, rect.height * dpr);
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+
+ const w = rect.width;
+ const h = rect.height;
+ ctx.clearRect(0,0,w,h);
+
+ const id = document.getElementById("chartAsset").value;
+ let data = historyData[id] || [];
+
+ const now = Date.now();
+ if (selectedRange === "1") data = data.filter(p => now - p.time <= 3600000);
+ if (selectedRange === "24") data = data.filter(p => now - p.time <= 86400000);
+
+ if (!data.length) {
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "13px Tahoma";
+  ctx.textAlign = "center";
+  ctx.fillText("هنوز داده‌ای برای رسم نمودار ثبت نشده است.", w/2, h/2);
+  ["statLast","statHigh","statLow"].forEach(x => document.getElementById(x).textContent = "---");
+  document.getElementById("statCount").textContent = "۰";
+  return;
+ }
+
+ const values = data.map(p => p.price);
+ const min = Math.min(...values);
+ const max = Math.max(...values);
+ const spread = max - min || Math.max(1, max * 0.01);
+ const low = min - spread * 0.12;
+ const high = max + spread * 0.12;
+
+ const pad = {left:12,right:12,top:18,bottom:25};
+ const cw = w - pad.left - pad.right;
+ const ch = h - pad.top - pad.bottom;
+
+ ctx.strokeStyle = "#263750";
+ ctx.lineWidth = 1;
+
+ for(let i=0;i<5;i++){
+  const y = pad.top + ch * i / 4;
+  ctx.beginPath();
+  ctx.moveTo(pad.left,y);
+  ctx.lineTo(w-pad.right,y);
+  ctx.stroke();
+ }
+
+ const points = data.map((p,i) => ({
+  x:pad.left + (data.length === 1 ? cw/2 : cw*i/(data.length-1)),
+  y:pad.top + ch - ((p.price-low)/(high-low))*ch
+ }));
+
+ ctx.beginPath();
+ points.forEach((p,i) => i ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y));
+ ctx.strokeStyle = "#20d6a0";
+ ctx.lineWidth = 2.5;
+ ctx.stroke();
+
+ const gradient = ctx.createLinearGradient(0,pad.top,0,h);
+ gradient.addColorStop(0,"rgba(32,214,160,0.24)");
+ gradient.addColorStop(1,"rgba(32,214,160,0)");
+
+ ctx.lineTo(points[points.length-1].x,h-pad.bottom);
+ ctx.lineTo(points[0].x,h-pad.bottom);
+ ctx.closePath();
+ ctx.fillStyle = gradient;
+ ctx.fill();
+
+ const last = points[points.length-1];
+ ctx.beginPath();
+ ctx.arc(last.x,last.y,4,0,Math.PI*2);
+ ctx.fillStyle = "#20d6a0";
+ ctx.fill();
+
+ document.getElementById("statLast").textContent = number(values[values.length-1]);
+ document.getElementById("statHigh").textContent = number(max);
+ document.getElementById("statLow").textContent = number(min);
+ document.getElementById("statCount").textContent = number(data.length);
+}
+
+document.getElementById("chartAsset").addEventListener("change",drawChart);
+
+document.querySelectorAll("[data-range]").forEach(btn => {
+ btn.addEventListener("click",() => {
+  document.querySelectorAll("[data-range]").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  selectedRange = btn.dataset.range;
+  drawChart();
+ });
+});
+
+document.getElementById("refreshBtn").addEventListener("click",updatePrices);
+window.addEventListener("resize",drawChart);
+
+drawChart();
+updatePrices();
+setInterval(updatePrices,30000);
+</script>
 </body>
 </html>
+EOF
