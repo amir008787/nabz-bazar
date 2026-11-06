@@ -67,7 +67,7 @@ async function updatePrices(){
  const status=document.getElementById("status");
  status.innerText="در حال دریافت آخرین قیمت‌ها...";
  try{
-  const response=await fetch("/api/prices");
+  const response=await const response=await fetch("/api/prices?t="+Date.now(), {cache:"no-store"});
   const result=await response.json();
   if(!response.ok) throw new Error(result.error || "خطا در دریافت اطلاعات");
 
