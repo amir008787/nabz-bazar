@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نبض بازار</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;padding:20px;
+ background:#07111f;color:#fff;
+ font-family:Tahoma,Arial,sans-serif;
+}
+header{text-align:center;margin:20px 0 28px}
+h1{color:#e8bd55;font-size:29px;margin:0 0 9px}
+header p{color:#9caec4;font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.card{
+ background:#111f31;border:1px solid #293a50;
+ border-radius:15px;padding:18px 12px;
+ min-height:112px;
+}
+.name{font-size:13px;color:#b8c5d6}
+.price{display:block;color:#f0c65e;font-size:19px;
+ font-weight:bold;margin-top:17px;direction:ltr;text-align:right}
+.unit{font-size:11px;color:#8fa1b6;margin-top:7px}
+button{
+ width:100%;padding:15px;margin-top:22px;
+ border:0;border-radius:12px;
+ background:#d6a83e;color:#101827;
+ font-size:16px;font-weight:bold;
+}
+#status{text-align:center;color:#91a4ba;font-size:12px;margin-top:16px}
+footer{text-align:center;color:#657990;font-size:11px;margin-top:35px}
+</style>
+</head>
+<body>
+<header>
+<h1>نبض بازار</h1>
+<p>آخرین نرخ ارز، طلا و سکه در بازار ایران</p>
+</header>
+
+<div class="grid" id="prices">
+<div class="card"><span class="name">💵 دلار آزاد</span><span class="price">---</span></div>
+<div class="card"><span class="name">💶 یورو</span><span class="price">---</span></div>
+<div class="card"><span class="name">🪙 طلای ۱۸ عیار</span><span class="price">---</span></div>
+<div class="card"><span class="name">👑 سکه امامی</span><span class="price">---</span></div>
+<div class="card"><span class="name">🪙 نیم سکه</span><span class="price">---</span></div>
+<div class="card"><span class="name">🪙 ربع سکه</span><span class="price">---</span></div>
+</div>
+
+<button onclick="updatePrices()">🔄 به‌روزرسانی قیمت‌ها</button>
+<div id="status">در انتظار دریافت قیمت‌ها...</div>
+<footer>نبض بازار | اطلاعات بر اساس منبع قیمت</footer>
+
+<script>
+const items = [
+ ["usd","💵 دلار آزاد"],
+ ["eur","💶 یورو"],
+ ["gold-18k","🪙 طلای ۱۸ عیار"],
+ ["coin-emami","👑 سکه امامی"],
+ ["coin-half","🪙 نیم سکه"],
+ ["coin-quarter","🪙 ربع سکه"]
+];
+
+async function updatePrices(){
+ const status=document.getElementById("status");
+ status.innerText="در حال دریافت آخرین قیمت‌ها...";
+ try{
+  const response=await fetch("/api/prices");
+  const result=await response.json();
+  if(!response.ok) throw new Error(result.error || "خطا در دریافت اطلاعات");
+
+  const data=result.prices;
+  document.getElementById("prices").innerHTML=items.map(([id,name])=>{
+   const item=data[id];
+   if(!item) return `<div class="card"><span class="name">${name}</span><span class="price">ناموجود</span></div>`;
+   const price=Number(item.price).toLocaleString("en-US");
+   const unit=item.unit==="IRT"?"تومان":"";
+   return `<div class="card">
+    <span class="name">${name}</span>
+    <span class="price">${price}</span>
+    <div class="unit">${unit}</div>
+   </div>`;
+  }).join("");
+
+  const times=items.map(([id])=>data[id]?.updated).filter(Boolean);
+  const latest=times.sort().at(-1);
+  status.innerText="آخرین دریافت: "+(latest ? new Date(latest).toLocaleString("fa-IR") : "نامشخص");
+ }catch(error){
+  status.innerText="خطا در دریافت قیمت‌ها: "+error.message;
+ }
+}
+
+updatePrices();
+</script>
+</body>
+</html>
