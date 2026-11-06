@@ -14,7 +14,7 @@ def home():
 @app.route("/api/prices")
 def prices():
     try:
-        response = requests.get(API_URL, timeout=15)
+        response = requests.get(API_URL, params={"_": int(__import__("time").time())}, headers={"Cache-Control": "no-cache", "Pragma": "no-cache"}, timeout=15)
         response.raise_for_status()
         items = response.json()["items"]
 
